@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Bed Availability</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Update Bed Availability</h1>
+    <form id="updateForm">
+        <label for="hospital">Hospital:</label>
+        <input type="text" id="hospital" required>
+
+        <label for="availability">Bed Availability:</label>
+        <input type="text" id="availability" required>
+
+        <button type="submit">Update</button>
+    </form>
+
+    <script>
+        document.getElementById('updateForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const hospital = document.getElementById('hospital').value.trim();
+            const availability = document.getElementById('availability').value.trim();
+
+            // Retrieve bed availability data from Local Storage or use default values
+            const bedAvailabilityData = JSON.parse(localStorage.getItem('bedAvailabilityData')) || [];
+
+            // Update the bed availability data for the hospital
+            const updatedData = bedAvailabilityData.map((hospitalData) => {
+                if (hospitalData.hospital === hospital) {
+                    return { hospital: hospital, availability: availability };
+                }
+                return hospitalData;
+            });
+
+            localStorage.setItem('bedAvailabilityData', JSON.stringify(updatedData));
+
+            alert('Bed availability updated successfully!');
+            // Redirect back to the main page after updating the data
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

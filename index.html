@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emergency Room Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .available {
+            color: green;
+        }
+
+        .full {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Emergency Room Tracker</h1>
+    </header>
+    <table id="hospitalTable">
+        <tr>
+            <th>Hospital</th>
+            <th>Bed Availability</th>
+        </tr>
+    </table>
+
+    <script>
+        async function updateBedAvailability(hospitalId, availability) {
+            try {
+                const response = await fetch(`api/bed-availability/${hospitalId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ availability })
+                });
+
+                if (response.ok) {
+                    console.log('Bed availability updated successfully!');
+                } else {
+                    console.error('Error updating bed availability:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error updating bed availability:', error.message);
+            }
+        }
+
+        async function loadBedAvailability() {
+            try {
+                const response = await fetch('api/bed-availability');
+                const bedAvailabilityData = await response.json();
+
+                const hospitalTable = document.getElementById('hospitalTable');
+                const tableBody = hospitalTable.querySelector('tbody');
+
+                // Clear existing table rows
+                tableBody.innerHTML = '';
+
+                // Update table with new bed availability data
+                bedAvailabilityData.forEach((hospitalData) => {
+                    const row = tableBody.insertRow();
+                    const hospitalCell = row.insertCell();
+                    hospitalCell.textContent = hospitalData.hospital;
+
+                    const availabilityCell = row.insertCell();
+                    availabilityCell.innerHTML = `<i class="fas ${hospitalData.availability === 'Available' ? 'fa-check-circle available' : 'fa-times-circle full'}"></i> <span class="bedAvailability">${hospitalData.availability}</span>`;
+
+                    const availabilityInput = document.createElement('input');
+                    availabilityInput.type = 'text';
+                    availabilityInput.value = hospitalData.availability;
+                    availabilityInput.style.display = 'none';
+                    availabilityCell.appendChild(availabilityInput);
+
+                    availabilityCell.addEventListener('click', () => {
+                        availabilityCell.querySelector('.bedAvailability').style.display = 'none';
+                        availabilityInput.style.display = 'inline';
+                        availabilityInput.focus();
+                    });
+
+                    availabilityInput.addEventListener('blur', () => {
+                        availabilityCell.querySelector('.bedAvailability').style.display = 'inline';
+                        availabilityInput.style.display = 'none';
+                        const newAvailability = availabilityInput.value.trim();
+                        availabilityCell.querySelector('.bedAvailability').textContent = newAvailability;
+                        updateBedAvailability(hospitalData._id, newAvailability);
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading bed availability:', error.message);
+            }
+        }
+
+        loadBedAvailability();
+    </script>
+</body>
+</html>
